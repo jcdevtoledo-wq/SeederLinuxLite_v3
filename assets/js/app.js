@@ -5,7 +5,7 @@
 
 // API helper with relative path (works when public/ is DocumentRoot)
 const API = {
-    baseUrl: 'api/',
+    baseUrl: 'api/index.php',  // <- CORRIGIDO: apontando para o index.php
 
     async request(action, method = 'GET', data = null) {
         // Build URL with action parameter
@@ -56,11 +56,36 @@ const API = {
 const Toast = {
     show(message, type = 'info', duration = 4000) {
         const container = document.getElementById('toast-container');
+        if (!container) {
+            // Create container if it doesn't exist
+            const newContainer = document.createElement('div');
+            newContainer.id = 'toast-container';
+            newContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                max-width: 400px;
+                width: 100%;
+            `;
+            document.body.appendChild(newContainer);
+        }
+
+        const toastContainer = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
         toast.style.cssText = `
             background: ${this.getBgColor(type)};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
             border-left: 4px solid ${this.getBorderColor(type)};
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+            transition: all 0.3s ease;
         `;
         toast.innerHTML = `
             <div class="flex items-center gap-3">
@@ -73,11 +98,11 @@ const Toast = {
                 </button>
             </div>
         `;
-        container.appendChild(toast);
+        toastContainer.appendChild(toast);
 
         setTimeout(() => {
             toast.style.opacity = '0';
-            toast.style.transform = 'translateX(100%)';
+            toast.style.transform = 'translateX(100px)';
             setTimeout(() => toast.remove(), 300);
         }, duration);
     },
@@ -158,6 +183,21 @@ const Utils = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    },
+
+    getInitials(name) {
+        if (!name) return '?';
+        return name.split(' ')
+            .filter(word => word.length > 0)
+            .map(word => word[0].toUpperCase())
+            .slice(0, 2)
+            .join('');
+    },
+
+    truncateText(text, maxLength = 50) {
+        if (!text) return '';
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
     }
 };
 
@@ -165,3 +205,21 @@ const Utils = {
 window.API = API;
 window.Toast = Toast;
 window.Utils = Utils;
+
+// Add animation styles
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+`;
+document.head.appendChild(style);
+
+console.log('SeederLinux Lite - App initialized');
