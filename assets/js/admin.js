@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const session = await API.get('session');
         if (!session.success) {
-            window.location.href = '/public/login.html';
+            window.location.href = 'login.html';
             return;
         }
 
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('user-initial').textContent = (session.data.full_name || session.data.username).charAt(0).toUpperCase();
         document.getElementById('user-role').textContent = session.data.role === 'admin' ? 'Administrador' : 'Gerente';
     } catch (error) {
-        window.location.href = '/public/login.html';
+        window.location.href = 'login.html';
         return;
     }
 
@@ -161,7 +161,7 @@ async function selectOrganization(orgId) {
     await loadScriptsForBundle(orgId);
 
     // Update download link
-    document.getElementById('download-link').href = `/api/?action=bundle-download&id=${encodeURIComponent(org.acronym)}`;
+    document.getElementById('download-link').href = `../api/?action=bundle-download&id=${encodeURIComponent(org.acronym)}`;
     document.getElementById('bundle-filename').textContent = `provision-${org.acronym.toLowerCase()}.sh`;
 }
 
@@ -299,7 +299,7 @@ function setupEventListeners() {
     document.getElementById('btn-logout').addEventListener('click', async () => {
         try {
             await API.post('logout');
-            window.location.href = '/public/login.html';
+            window.location.href = 'login.html';
         } catch (error) {
             Toast.error('Erro ao sair');
         }
@@ -388,7 +388,7 @@ async function updateOrganization() {
     }
 
     try {
-        const response = await fetch(`/api/?action=organization&id=${currentOrgId}`, {
+        const response = await fetch(`../api/?action=organization&id=${currentOrgId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, domain, description })
@@ -413,7 +413,7 @@ async function deleteOrganization() {
     if (!currentOrgId) return;
 
     try {
-        const response = await fetch(`/api/?action=organization&id=${currentOrgId}`, {
+        const response = await fetch(`../api/?action=organization&id=${currentOrgId}`, {
             method: 'DELETE'
         });
 

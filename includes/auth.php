@@ -6,6 +6,7 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../lib/config.php';
 require_once __DIR__ . '/../lib/db.php';
 require_once __DIR__ . '/../lib/functions.php';
 
@@ -116,13 +117,13 @@ function requireAuth(): void {
         if (isAjax()) {
             jsonError('Unauthorized', 401);
         }
-        redirect('/login');
+        redirect('public/login.html');
     }
 
     // Session timeout check (24 hours)
     if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time']) > 86400) {
         logout();
-        redirect('/login?timeout=1');
+        redirect('public/login.html?timeout=1');
     }
 }
 

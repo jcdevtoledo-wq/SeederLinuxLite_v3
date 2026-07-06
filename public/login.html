@@ -6,7 +6,7 @@
     <title>Login - SeederLinux Lite</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -91,7 +91,7 @@
             </form>
 
             <div class="mt-6 pt-6 border-t border-slate-700">
-                <a href="/public/index.html" class="flex items-center justify-center gap-2 text-slate-400 hover:text-white transition-colors">
+                <a href="index.html" class="flex items-center justify-center gap-2 text-slate-400 hover:text-white transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
@@ -110,11 +110,11 @@
         // Check if already logged in
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('/api/?action=session');
+                const response = await fetch('../api/?action=session');
                 const data = await response.json();
 
                 if (data.success) {
-                    window.location.href = '/public/admin.html';
+                    window.location.href = 'admin.html';
                 }
             } catch (error) {
                 // Not logged in, show form
@@ -137,7 +137,7 @@
             errorMessage.classList.add('hidden');
 
             try {
-                const response = await fetch('/api/?action=login', {
+                const response = await fetch('../api/?action=login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -148,7 +148,7 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    window.location.href = '/public/admin.html';
+                    window.location.href = 'admin.html';
                 } else {
                     errorMessage.textContent = data.error || 'Erro ao realizar login';
                     errorMessage.classList.remove('hidden');

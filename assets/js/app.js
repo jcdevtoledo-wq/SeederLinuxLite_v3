@@ -3,9 +3,18 @@
  * Common utilities and functions
  */
 
+// Detect base path for API calls
+const getBasePath = () => {
+    const path = window.location.pathname;
+    if (path.includes('/public/')) {
+        return '../api/';
+    }
+    return '/api/';
+};
+
 // API helper
 const API = {
-    baseUrl: '/api/',
+    baseUrl: getBasePath(),
 
     async request(action, method = 'GET', data = null) {
         const url = `${this.baseUrl}?action=${encodeURIComponent(action)}`;

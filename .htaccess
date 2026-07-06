@@ -17,11 +17,11 @@ RewriteRule ^api/(.*)$ /api/index.php?action=$1 [QSA,L]
 # Frontend routing - serve HTML files
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^admin$ /public/admin.html [L]
+RewriteRule ^admin$ /public/admin.html [L,R=302]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^login$ /public/login.html [L]
+RewriteRule ^login$ /public/login.html [L,R=302]
 
 # Serve index.html for root
 RewriteCond %{REQUEST_FILENAME} !-f

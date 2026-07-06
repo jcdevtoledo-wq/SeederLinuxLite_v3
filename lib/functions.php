@@ -164,11 +164,35 @@ function getJsonInput(): array {
 }
 
 /**
- * Redirect to URL
+ * Redirect to URL using absolute path
  */
 function redirect(string $url): void {
-    header("Location: $url");
+    // Use Config for absolute URLs if available
+    if (class_exists('Config')) {
+        // Make relative URLs absolute
+        if (!preg_match('/^https?:\/\//', $url)) {
+            $url = Config::url($url);
+        }
+    } else {
+        // Fallback: ensure absolute URL path
+        if (!preg_match('/^https?:\/\//', $url) && !str_starts_with($url, '/')) {
+            $url = '/' . ltrim($url, '/');
+        }
+    }
+    header("Location: $url", true, 302);
     exit;
+}
+
+/**
+ * Get base URL for the application
+ */
+function getBaseUrl(): string {
+    if (class_exists('Config')) {
+        return Config::getBaseUrl();
+    }
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    return "$protocol://$host";
 }
 
 /**
