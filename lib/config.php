@@ -6,6 +6,17 @@
 
 declare(strict_types=1);
 
+// Load environment variables from .env file
+if (file_exists(__DIR__ . '/../.env')) {
+    $lines = file(__DIR__ . '/../.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos($line, '=') !== false && strpos($line, '#') !== 0) {
+            list($key, $value) = explode('=', $line, 2);
+            $_ENV[trim($key)] = trim($value);
+        }
+    }
+}
+
 class Config {
     private static array $settings = [];
 
@@ -67,7 +78,7 @@ class Config {
      * Get public page URL
      */
     public static function page(string $page): string {
-        return self::url("public/$page");
+        return self::url($page);
     }
 
     /**
@@ -75,9 +86,9 @@ class Config {
      */
     public static function api(string $action = ''): string {
         if ($action) {
-            return self::url("api/?action=$action");
+            return self::url("api/index.php?action=$action");
         }
-        return self::url("api/");
+        return self::url("api/index.php");
     }
 
     /**
