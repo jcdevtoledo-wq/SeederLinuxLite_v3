@@ -219,6 +219,7 @@ configure_apache() {
     print_success "Certificado criado em ${SSL_DIR}"
 
     print_step "Criando VirtualHosts (HTTP -> HTTPS)..."
+    # ⚠️ O terminador EOF DEVE estar no início da linha (coluna 0)!
     cat > /etc/apache2/sites-available/${PROJECT_NAME}.conf <<EOF
 # VirtualHost porta 80: redireciona todo tráfego para HTTPS
 <VirtualHost *:80>
@@ -251,6 +252,9 @@ configure_apache() {
     Header always set Strict-Transport-Security "max-age=63072000; includeSubdomains;"
 </VirtualHost>
 EOF
+    # ↑ Linha acima inicia na coluna 0, sem indentação
+
+    print_success "VirtualHost criado em /etc/apache2/sites-available/${PROJECT_NAME}.conf"
 
     a2dissite 000-default.conf || true
     a2ensite ${PROJECT_NAME}.conf
