@@ -3,45 +3,13 @@
  * Common utilities and functions
  */
 
-// Detect base path for API calls based on current location
-const getBasePath = () => {
-    const path = window.location.pathname;
-    const segments = path.split('/').filter(s => s.length > 0);
-
-    // If we're in /public/ directory (e.g., login.html, admin.html)
-    if (segments.includes('public')) {
-        return '../api/';
-    }
-
-    // If we're at root or somewhere else, use relative path
-    // Calculate how many levels to go up
-    const depth = segments.length;
-    if (depth === 0 || segments[segments.length - 1].endsWith('.html')) {
-        // At root or HTML file
-        if (segments.includes('public')) {
-            return '../api/';
-        }
-        return 'api/';
-    }
-
-    // Default: try to reach api from current location
-    return './api/';
-};
-
-// API helper
+// API helper with absolute paths
 const API = {
-    baseUrl: getBasePath(),
+    baseUrl: '/api/',
 
     async request(action, method = 'GET', data = null) {
         // Build URL with action parameter
-        let url;
-        if (this.baseUrl.endsWith('?')) {
-            url = `${this.baseUrl}action=${encodeURIComponent(action)}`;
-        } else if (this.baseUrl.includes('?')) {
-            url = `${this.baseUrl}&action=${encodeURIComponent(action)}`;
-        } else {
-            url = `${this.baseUrl}?action=${encodeURIComponent(action)}`;
-        }
+        const url = `${this.baseUrl}?action=${encodeURIComponent(action)}`;
 
         const options = {
             method,

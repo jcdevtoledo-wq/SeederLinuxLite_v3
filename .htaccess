@@ -4,10 +4,9 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)/$ /$1 [L,R=301]
 
-# Serve root index.html
-RewriteCond %{REQUEST_FILENAME} !-f
+# Redirect root to public/index.html (change URL in browser)
 RewriteCond %{REQUEST_URI} ^/$
-RewriteRule ^$ /public/index.html [L]
+RewriteRule ^$ /public/index.html [R=302,L]
 
 # API routing - redirect to index.php with query parameter
 RewriteCond %{REQUEST_FILENAME} !-f
@@ -18,14 +17,14 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^api/(.+)$ /api/index.php?action=$1 [QSA,L]
 
-# Short URLs for pages
+# Short URLs for pages (redirect to public folder)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^login$ /public/login.html [L,R=302]
+RewriteRule ^login$ /public/login.html [R=302,L]
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^admin$ /public/admin.html [L,R=302]
+RewriteRule ^admin$ /public/admin.html [R=302,L]
 
 # Security headers
 <IfModule mod_headers.c>

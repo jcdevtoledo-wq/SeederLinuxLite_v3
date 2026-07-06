@@ -53,22 +53,9 @@
         }, null, 2);
 
         // Calculate API paths
-        const pathSegments = window.location.pathname.split('/').filter(s => s.length > 0);
         let apiPaths = [];
-        apiPaths.push({ desc: 'Relative 1 up', path: '../api/?action=session' });
-        apiPaths.push({ desc: 'Relative 2 up', path: '../../api/?action=session' });
         apiPaths.push({ desc: 'Absolute from root', path: '/api/?action=session' });
         apiPaths.push({ desc: 'From origin', path: window.location.origin + '/api/?action=session' });
-
-        let depth = pathSegments.length;
-        if (pathSegments[pathSegments.length - 1]?.includes('.')) {
-            depth--;
-        }
-
-        apiPaths.push({
-            desc: `Dynamic (${depth} levels up)`,
-            path: '../'.repeat(depth) + 'api/?action=session'
-        });
 
         document.getElementById('urls').textContent = apiPaths.map(p =>
             `${p.desc}: ${p.path}`
@@ -82,7 +69,6 @@
             const tests = [];
 
             for (const test of [
-                '../api/?action=session',
                 '/api/?action=session',
                 window.location.origin + '/api/?action=session'
             ]) {
@@ -116,7 +102,7 @@
 
             const tests = [];
 
-            for (const testUrl of ['../api/', '/api/']) {
+            for (const testUrl of ['/api/']) {
                 try {
                     const res = await fetch(testUrl + '?action=login', {
                         method: 'POST',
