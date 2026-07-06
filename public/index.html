@@ -391,8 +391,7 @@ $ python3 agent.py --org <span class="text-amber-400">COMARA</span>
         // Load public stats and organizations
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('../api/?action=stats');
-                const data = await response.json();
+                const data = await API.get('stats');
 
                 if (data.success) {
                     document.getElementById('stat-orgs').textContent = data.data.organizations;
@@ -402,20 +401,17 @@ $ python3 agent.py --org <span class="text-amber-400">COMARA</span>
                 }
 
                 // Load organizations for public bundle download
-                const orgsResponse = await fetch('../api/?action=organizations');
-                const orgsData = await orgsResponse.json();
+                const orgsData = await API.get('organizations');
 
                 if (orgsData.success && orgsData.data) {
                     const orgList = document.getElementById('org-list-public');
-                    orgsData.data.forEach(org => {
-                        orgList.innerHTML += `
-                            <a href="../api/?action=bundle-download&id=\${encodeURIComponent(org.acronym)}"
-                               class="p-4 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors flex items-center gap-3">
-                                <span class="text-2xl font-bold text-blue-400">\${org.acronym}</span>
-                                <span class="text-slate-400 text-sm">\${org.name}</span>
-                            </a>
-                        `;
-                    });
+                    orgList.innerHTML = orgsData.data.map(org => `
+                        <a href="../api/?action=bundle-download&id=${encodeURIComponent(org.acronym)}"
+                           class="p-4 bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors flex items-center gap-3">
+                            <span class="text-2xl font-bold text-blue-400">${org.acronym}</span>
+                            <span class="text-slate-400 text-sm">${org.name}</span>
+                        </a>
+                    `).join('');
                 }
             } catch (error) {
                 console.error('Error loading data:', error);

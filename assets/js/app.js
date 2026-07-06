@@ -3,13 +3,29 @@
  * Common utilities and functions
  */
 
-// Detect base path for API calls
+// Detect base path for API calls based on current location
 const getBasePath = () => {
     const path = window.location.pathname;
-    if (path.includes('/public/')) {
+    const segments = path.split('/').filter(s => s.length > 0);
+
+    // If we're in /public/ directory (e.g., login.html, admin.html)
+    if (segments.includes('public')) {
         return '../api/';
     }
-    return '/api/';
+
+    // If we're at root or somewhere else, use relative path
+    // Calculate how many levels to go up
+    const depth = segments.length;
+    if (depth === 0 || segments[segments.length - 1].endsWith('.html')) {
+        // At root or HTML file
+        if (segments.includes('public')) {
+            return '../api/';
+        }
+        return 'api/';
+    }
+
+    // Default: try to reach api from current location
+    return './api/';
 };
 
 // API helper
@@ -17,20 +33,38 @@ const API = {
     baseUrl: getBasePath(),
 
     async request(action, method = 'GET', data = null) {
-        const url = `${this.baseUrl}?action=${encodeURIComponent(action)}`;
+        // Build URL with action parameter
+        let url;
+        if (this.baseUrl.endsWith('?')) {
+            url = `${this.baseUrl}action=${encodeURIComponent(action)}`;
+        } else if (this.baseUrl.includes('?')) {
+            url = `${this.baseUrl}&action=${encodeURIComponent(action)}`;
+        } else {
+            url = `${this.baseUrl}?action=${encodeURIComponent(action)}`;
+        }
+
         const options = {
             method,
             headers: {
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'same-origin' // Include cookies for session
         };
 
         if (data && method !== 'GET') {
             options.body = JSON.stringify(data);
         }
 
-        const response = await fetch(url, options);
-        return response.json();
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        } catch (error) {
+            console.error('API Error:', error);
+            throw error;
+        }
     },
 
     async get(action) {

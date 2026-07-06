@@ -106,13 +106,12 @@
         </p>
     </div>
 
+    <script src="../assets/js/app.js"></script>
     <script>
         // Check if already logged in
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('../api/?action=session');
-                const data = await response.json();
-
+                const data = await API.get('session');
                 if (data.success) {
                     window.location.href = 'admin.html';
                 }
@@ -137,15 +136,7 @@
             errorMessage.classList.add('hidden');
 
             try {
-                const response = await fetch('../api/?action=login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const data = await response.json();
+                const data = await API.post('login', { username, password });
 
                 if (data.success) {
                     window.location.href = 'admin.html';

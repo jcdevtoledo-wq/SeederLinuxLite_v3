@@ -388,13 +388,7 @@ async function updateOrganization() {
     }
 
     try {
-        const response = await fetch(`../api/?action=organization&id=${currentOrgId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, domain, description })
-        });
-
-        const data = await response.json();
+        const data = await API.put('organization', currentOrgId, { name, domain, description });
 
         if (data.success) {
             Toast.success('Organização atualizada');
@@ -413,11 +407,7 @@ async function deleteOrganization() {
     if (!currentOrgId) return;
 
     try {
-        const response = await fetch(`../api/?action=organization&id=${currentOrgId}`, {
-            method: 'DELETE'
-        });
-
-        const data = await response.json();
+        const data = await API.delete('organization', currentOrgId);
 
         if (data.success) {
             Toast.success('Organização excluída');
