@@ -1,33 +1,25 @@
 cd /opt/SeederLinuxLite_v3/install
 
-# Crie o script corrigido
 cat > install_fixed.sh << 'SCRIPTEOF'
 #!/bin/bash
 # ============================================================================
 # SeederLinux Lite - Installation Script (Debian 13 Ready)
 # ============================================================================
 
-
 cat > /etc/apt/sources.list << 'EOF'
 # Debian 13 (Trixie) - Repositórios Oficiais
 
-# Repositório principal
 deb http://deb.debian.org/debian/ trixie main contrib non-free non-free-firmware
 deb-src http://deb.debian.org/debian/ trixie main contrib non-free non-free-firmware
 
-# Atualizações de segurança
 deb http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
 deb-src http://security.debian.org/debian-security trixie-security main contrib non-free non-free-firmware
 
-# Atualizações estáveis
 deb http://deb.debian.org/debian/ trixie-updates main contrib non-free non-free-firmware
 deb-src http://deb.debian.org/debian/ trixie-updates main contrib non-free non-free-firmware
 EOF
 
 apt update
-
-
-
 
 set -e
 set -u
@@ -208,22 +200,55 @@ setup_permissions() {
 }
 
 configure_apache() {
-    print_header "CONFIGURANDO APACHE"
+    print_header "CONFIGURANDO APACHE COM SSL E REDIRECIONAMENTO"
 
-    print_step "Criando VirtualHost..."
+    SSL_DIR="/etc/ssl/${PROJECT_NAME}"
+    CERT_FILE="${SSL_DIR}/${PROJECT_NAME}.crt"
+    KEY_FILE="${SSL_DIR}/${PROJECT_NAME}.key"
+
+    print_step "Gerando certificado autoassinado..."
+    mkdir -p "$SSL_DIR"
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+        -keyout "$KEY_FILE" \
+        -out "$CERT_FILE" \
+        -subj "/C=BR/ST=Estado/L=Cidade/O=SeederLinux/CN=${SERVER_NAME}" \
+        -addext "subjectAltName=DNS:${SERVER_NAME},DNS:localhost" 2>/dev/null
+
+    chmod 600 "$KEY_FILE"
+    chmod 644 "$CERT_FILE"
+    print_success "Certificado criado em ${SSL_DIR}"
+
+    print_step "Criando VirtualHosts (HTTP -> HTTPS)..."
     cat > /etc/apache2/sites-available/${PROJECT_NAME}.conf <<EOF
+# VirtualHost porta 80: redireciona todo tráfego para HTTPS
 <VirtualHost *:80>
     ServerName ${SERVER_NAME}
+    RewriteEngine On
+    RewriteCond %{HTTPS} !=on
+    RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R=301,L]
+</VirtualHost>
+
+# VirtualHost porta 443: SSL + aplicação
+<VirtualHost *:443>
+    ServerName ${SERVER_NAME}
     DocumentRoot ${INSTALL_DIR}/public
+
+    SSLEngine on
+    SSLCertificateFile      ${CERT_FILE}
+    SSLCertificateKeyFile   ${KEY_FILE}
 
     <Directory ${INSTALL_DIR}/public>
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
+        FallbackResource /index.php
     </Directory>
 
     ErrorLog \${APACHE_LOG_DIR}/${PROJECT_NAME}_error.log
     CustomLog \${APACHE_LOG_DIR}/${PROJECT_NAME}_access.log combined
+
+    # HSTS (força HTTPS por 2 anos)
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubdomains;"
 </VirtualHost>
 EOF
 
@@ -243,7 +268,7 @@ EOF
     systemctl restart apache2
     systemctl enable apache2
 
-    print_success "Apache configurado"
+    print_success "Apache configurado com SSL"
 }
 
 show_summary() {
@@ -256,12 +281,13 @@ show_summary() {
     echo -e "${NC}"
 
     echo -e "\n${BOLD}Acesso:${NC}"
-    echo -e "  http://${SERVER_NAME}/"
+    echo -e "  https://${SERVER_NAME}/   (certificado autoassinado)"
+    echo -e "  http://${SERVER_NAME}/    redireciona → https"
     echo -e "\n${BOLD}Banco de Dados:${NC}"
     echo -e "  Database: ${DB_NAME}"
     echo -e "  User: ${DB_USER}"
     echo -e "  Pass: ${DB_PASS}"
-    echo -e "\n${YELLOW}${BOLD}⚠ ALTERE AS SENHAS PADRÃO!${NC}\n"
+    echo -e "\n${YELLOW}${BOLD}⚠ ALTERE AS SENHAS PADRÃO E O CERTIFICADO AUTOASSINADO!${NC}\n"
 }
 
 main() {
@@ -277,7 +303,8 @@ main() {
     echo -e "${YELLOW}Este script irá:${NC}"
     echo "  • Instalar Apache2, PHP, PostgreSQL"
     echo "  • Criar banco e usuário"
-    echo "  • Configurar VirtualHost"
+    echo "  • Configurar VirtualHost com redirecionamento HTTP → HTTPS"
+    echo "  • Gerar certificado SSL autoassinado"
     echo "  • Copiar arquivos para ${INSTALL_DIR}"
     echo ""
     read -p "Deseja continuar? (s/N): " -n 1 -r
@@ -299,8 +326,5 @@ main() {
 main "$@"
 SCRIPTEOF
 
-# Torne executável
 chmod +x install_fixed.sh
-
-# Execute
 ./install_fixed.sh
