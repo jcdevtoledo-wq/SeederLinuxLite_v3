@@ -115,15 +115,15 @@ function logout(): void {
 function requireAuth(): void {
     if (!isLoggedIn()) {
         if (isAjax()) {
-            jsonError('Unauthorized', 401);
+            jsonError('Not authenticated', 401);
         }
-        redirect('public/login.html');
+        redirect('/login.html');
     }
 
     // Session timeout check (24 hours)
     if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time']) > 86400) {
         logout();
-        redirect('public/login.html?timeout=1');
+        redirect('/login.html?timeout=1');
     }
 }
 
@@ -179,6 +179,6 @@ function requireAdmin(): void {
         if (isAjax()) {
             jsonError('Forbidden: Admin access required', 403);
         }
-        redirect('/admin');
+        redirect('/admin.html');
     }
 }

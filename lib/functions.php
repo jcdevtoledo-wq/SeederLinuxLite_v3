@@ -524,22 +524,6 @@ function validateAllVariables(array $variables): array {
         'warnings' => $allWarnings
     ];
 }
-                break;
-
-            case 'BASE_URL':
-            case 'WALLPAPER_URL':
-            case 'LOGO_URL':
-            case 'OCS_SERVER':
-            case 'PROXY_URL':
-                if (!isValidURL($value)) {
-                    $errors[] = "$name deve ser uma URL válida";
-                }
-                break;
-        }
-    }
-
-    return $errors;
-}
 
 /**
  * Replace placeholders in content
