@@ -3,13 +3,15 @@
  * Common utilities and functions
  */
 
-// API helper with relative path (works when public/ is DocumentRoot)
+// API helper with ABSOLUTE path (required for proper session handling)
 const API = {
-    baseUrl: 'api/',
+    baseUrl: '/api/',  // MUST be absolute to work from any page
 
     async request(action, method = 'GET', data = null) {
         // Build URL with action parameter
         const url = `${this.baseUrl}?action=${encodeURIComponent(action)}`;
+
+        console.log(`[API] ${method} ${url}`, data || '');
 
         const options = {
             method,
@@ -28,7 +30,9 @@ const API = {
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
-            return response.json();
+            const result = await response.json();
+            console.log(`[API] Response:`, result);
+            return result;
         } catch (error) {
             console.error('API Error:', error);
             throw error;

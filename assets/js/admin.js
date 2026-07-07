@@ -4,20 +4,28 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('[Admin] Checking authentication...');
+
     // Check authentication
     try {
         const session = await API.get('session');
+        console.log('[Admin] Session result:', session);
+
         if (!session.success) {
-            window.location.href = 'login.html';
+            console.log('[Admin] No session, redirecting to /login.html');
+            window.location.href = '/login.html';
             return;
         }
+
+        console.log('[Admin] User authenticated:', session.data);
 
         // Update user info
         document.getElementById('user-name').textContent = session.data.full_name || session.data.username;
         document.getElementById('user-initial').textContent = (session.data.full_name || session.data.username).charAt(0).toUpperCase();
         document.getElementById('user-role').textContent = session.data.role === 'admin' ? 'Administrador' : 'Gerente';
     } catch (error) {
-        window.location.href = 'login.html';
+        console.error('[Admin] Auth check failed:', error);
+        window.location.href = '/login.html';
         return;
     }
 
@@ -161,7 +169,7 @@ async function selectOrganization(orgId) {
     await loadScriptsForBundle(orgId);
 
     // Update download link
-    document.getElementById('download-link').href = `api/?action=bundle-download&id=${encodeURIComponent(org.acronym)}`;
+    document.getElementById('download-link').href = `/api/?action=bundle-download&id=${encodeURIComponent(org.acronym)}`;
     document.getElementById('bundle-filename').textContent = `provision-${org.acronym.toLowerCase()}.sh`;
 }
 
@@ -299,7 +307,8 @@ function setupEventListeners() {
     document.getElementById('btn-logout').addEventListener('click', async () => {
         try {
             await API.post('logout');
-            window.location.href = 'login.html';
+            console.log('[Admin] Logged out, redirecting to /login.html');
+            window.location.href = '/login.html';
         } catch (error) {
             Toast.error('Erro ao sair');
         }

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico - SeederLinux Lite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Diagnóstico de Rotas</h1>
+
+        <div class="space-y-6">
+            <div class="bg-slate-800 rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">1. Informações do Navegador</h2>
+                <div id="browser-info" class="font-mono text-sm bg-slate-900 p-4 rounded"></div>
+            </div>
+
+            <div class="bg-slate-800 rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">2. Teste de Rota</h2>
+                <button id="test-btn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">
+                    Testar API
+                </button>
+                <pre id="api-result" class="mt-4 font-mono text-sm bg-slate-900 p-4 rounded overflow-auto"></pre>
+            </div>
+
+            <div class="bg-slate-800 rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">3. Teste de Login</h2>
+                <button id="test-login-btn" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg">
+                    Testar Login (admin/admin123)
+                </button>
+                <pre id="login-result" class="mt-4 font-mono text-sm bg-slate-900 p-4 rounded overflow-auto"></pre>
+            </div>
+
+            <div class="bg-slate-800 rounded-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">4. URLs Detectadas</h2>
+                <div id="urls" class="font-mono text-sm bg-slate-900 p-4 rounded"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Browser info
+        document.getElementById('browser-info').textContent = JSON.stringify({
+            href: window.location.href,
+            protocol: window.location.protocol,
+            host: window.location.host,
+            hostname: window.location.hostname,
+            port: window.location.port || '80/443',
+            pathname: window.location.pathname,
+            search: window.location.search,
+            origin: window.location.origin
+        }, null, 2);
+
+        // Calculate API paths
+        let apiPaths = [];
+        apiPaths.push({ desc: 'Absolute from root', path: '/api/?action=session' });
+        apiPaths.push({ desc: 'From origin', path: window.location.origin + '/api/?action=session' });
+
+        document.getElementById('urls').textContent = apiPaths.map(p =>
+            `${p.desc}: ${p.path}`
+        ).join('\n');
+
+        // Test API
+        document.getElementById('test-btn').addEventListener('click', async () => {
+            const result = document.getElementById('api-result');
+            result.textContent = 'Testando...';
+
+            const tests = [];
+
+            for (const test of [
+                '/api/?action=session',
+                window.location.origin + '/api/?action=session'
+            ]) {
+                try {
+                    const startTime = performance.now();
+                    const res = await fetch(test);
+                    const data = await res.json();
+                    const duration = Math.round(performance.now() - startTime);
+                    tests.push({
+                        url: test,
+                        status: res.status,
+                        ok: res.ok,
+                        duration: duration + 'ms',
+                        data: data
+                    });
+                } catch (e) {
+                    tests.push({
+                        url: test,
+                        error: e.message
+                    });
+                }
+            }
+
+            result.textContent = JSON.stringify(tests, null, 2);
+        });
+
+        // Test Login
+        document.getElementById('test-login-btn').addEventListener('click', async () => {
+            const result = document.getElementById('login-result');
+            result.textContent = 'Testando login...';
+
+            const tests = [];
+
+            for (const testUrl of ['/api/']) {
+                try {
+                    const res = await fetch(testUrl + '?action=login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: 'admin', password: 'admin123' }),
+                        credentials: 'same-origin'
+                    });
+                    const data = await res.json();
+                    tests.push({
+                        url: testUrl + '?action=login',
+                        status: res.status,
+                        data: data
+                    });
+                } catch (e) {
+                    tests.push({
+                        url: testUrl + '?action=login',
+                        error: e.message
+                    });
+                }
+            }
+
+            result.textContent = JSON.stringify(tests, null, 2);
+        });
+    </script>
+</body>
+</html>

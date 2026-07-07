@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - SeederLinux Lite</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            margin: 0;
+        }
+        pre {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .info { color: #3b82f6; }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background: #2563eb; }
+        .section {
+            margin: 20px 0;
+            border: 1px solid #334155;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        h2 { margin-top: 0; }
+    </style>
+</head>
+<body>
+    <h1>SeederLinux Lite - Debug Tool</h1>
+
+    <div class="section">
+        <h2>Test 1: Session Check</h2>
+        <button onclick="testSession()">Check Session</button>
+        <pre id="session-result">Click button to test...</pre>
+    </div>
+
+    <div class="section">
+        <h2>Test 2: Login</h2>
+        <div>
+            <input type="text" id="username" placeholder="Username" value="admin" style="padding:8px;margin:5px;">
+            <input type="password" id="password" placeholder="Password" value="admin123" style="padding:8px;margin:5px;">
+        </div>
+        <button onclick="testLogin()">Test Login</button>
+        <pre id="login-result">Click button to test...</pre>
+    </div>
+
+    <div class="section">
+        <h2>Test 3: Session After Login</h2>
+        <button onclick="testSessionAfterLogin()">Check Session After Login</button>
+        <pre id="session-after-result">Click button to test...</pre>
+    </div>
+
+    <div class="section">
+        <h2>Test 4: PHP Session Info</h2>
+        <button onclick="testPhpSession()">Get PHP Session Info</button>
+        <pre id="php-session-result">Click button to test...</pre>
+    </div>
+
+    <script>
+        async function apiRequest(url, options = {}) {
+            console.log('[API]', options.method || 'GET', url);
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                const data = await response.json();
+                console.log('[API] Response:', data);
+                return data;
+            } catch (error) {
+                console.error('[API] Error:', error);
+                return { error: error.message };
+            }
+        }
+
+        async function testSession() {
+            const result = document.getElementById('session-result');
+            result.textContent = 'Testing...';
+            const data = await apiRequest('/api/?action=session');
+            result.textContent = JSON.stringify(data, null, 2);
+            result.className = data.success ? 'success' : 'error';
+        }
+
+        async function testLogin() {
+            const result = document.getElementById('login-result');
+            result.textContent = 'Testing...';
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const data = await apiRequest('/api/?action=login', {
+                method: 'POST',
+                body: JSON.stringify({ username, password })
+            });
+            result.textContent = JSON.stringify(data, null, 2);
+            result.className = data.success ? 'success' : 'error';
+        }
+
+        async function testSessionAfterLogin() {
+            const result = document.getElementById('session-after-result');
+            result.textContent = 'Testing...';
+            const data = await apiRequest('/api/?action=session');
+            result.textContent = JSON.stringify(data, null, 2);
+            result.className = data.success ? 'success' : 'error';
+        }
+
+        async function testPhpSession() {
+            const result = document.getElementById('php-session-result');
+            result.textContent = 'Testing...';
+            try {
+                const response = await fetch('/test_session.php', { credentials: 'same-origin' });
+                const data = await response.json();
+                result.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                result.textContent = 'Error: ' + error.message;
+                result.className = 'error';
+            }
+        }
+
+        // Initial check
+        testSession();
+    </script>
+</body>
+</html>
