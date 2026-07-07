@@ -6,7 +6,6 @@
 
 declare(strict_types=1);
 
-// Corrigir caminhos para incluir arquivos da pasta public
 require_once __DIR__ . '/../includes/auth.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -976,4 +975,3 @@ function handleUpdateSettings(array $input): void {
         'message' => count($updated) . ' configurações atualizadas'
     ], 'Configurações atualizadas com sucesso');
 }
-?>
